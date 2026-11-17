@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radon im Haus 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: dunkles Messgeräte-Band oben (Titel + Kennzahlen), darunter helle Arbeitsfläche mit Kapiteln */
+:root {
+  --band-bg: #1b2229; --band-fg: #eef1f3; --band-fg2: #a7b2ba; --band-line: #2f3a43;
+  --bg: #eef0ee; --surface: #ffffff; --line: #d9ddda; --grid: #e7eae8;
+  --fg: #161b1f; --fg2: #4d585e; --fg3: #808a8f;
+  --accent: #e0a100; --accent-ink: #8a5f00;
+  --crit: #c53b3b; --warn: #b7791f; --good: #2f7d3a;
+  --neg: #2a78d6; --pos: #eb6834;
+  --urlaub: rgba(197, 59, 59, .09);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --s5: #e87ba4; --s6: #008300; --s7: #6250d6;
+  --f-display: "Outfit", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --band-bg: #11171c; --band-fg: #eef1f3; --band-fg2: #95a1a9; --band-line: #26313a;
+    --bg: #161c20; --surface: #1d2429; --line: #2c363d; --grid: #252e34;
+    --fg: #e8ecee; --fg2: #a8b3b9; --fg3: #7b878d;
+    --accent: #f0b429; --accent-ink: #f0b429;
+    --crit: #e66767; --warn: #e0a243; --good: #4cb85c;
+    --neg: #3987e5; --pos: #d95926; --urlaub: rgba(230, 103, 103, .13);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    --s5: #d55181; --s6: #0ca30c; --s7: #9085e9;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --band-bg: #11171c; --band-fg: #eef1f3; --band-fg2: #95a1a9; --band-line: #26313a;
+  --bg: #161c20; --surface: #1d2429; --line: #2c363d; --grid: #252e34;
+  --fg: #e8ecee; --fg2: #a8b3b9; --fg3: #7b878d;
+  --accent: #f0b429; --accent-ink: #f0b429;
+  --crit: #e66767; --warn: #e0a243; --good: #4cb85c;
+  --neg: #3987e5; --pos: #d95926; --urlaub: rgba(230, 103, 103, .13);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  --s5: #d55181; --s6: #0ca30c; --s7: #9085e9;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 16px; line-height: 1.5; }
+.innen {
+  max-width: 1200px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--f-display); margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* Kopfband */
+.band { background: var(--band-bg); color: var(--band-fg); }
+.band .innen { padding-block: 36px 0; display: grid; gap: 28px; }
+.titel { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: center; }
+.titel svg { width: 64px; height: 64px; }
+.titel .ebene { font-family: var(--f-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.titel h1 { font-size: clamp(30px, 5vw, 46px); font-weight: 700; letter-spacing: -.02em; line-height: 1.05; }
+.band .lead { color: var(--band-fg2); max-width: 68ch; font-size: 16px; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--band-line); }
+.kpi { padding: 20px 20px 26px 0; display: grid; gap: 4px; align-content: start; }
+.kpi + .kpi { padding-left: 20px; border-left: 1px solid var(--band-line); }
+.kpi .lbl { font-size: 14px; color: var(--band-fg2); }
+.kpi .val { font-family: var(--f-display); font-size: 40px; font-weight: 600; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi .val small { font-family: var(--f-mono); font-size: 13px; font-weight: 400; color: var(--band-fg2); margin-left: 6px; }
+.status { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--band-fg2); }
+.status::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--c); }
+
+/* Inhalt */
+main .innen { padding-block: 32px 64px; display: grid; gap: 40px; }
+.kapitel { display: grid; gap: 16px; }
+.kapitel > header { display: grid; gap: 6px; max-width: 78ch; }
+.kapitel h2 { font-size: 24px; font-weight: 600; letter-spacing: -.01em; }
+.kapitel > header p { color: var(--fg2); }
+.flaeche { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px; min-width: 0; }
+.flaeche > *, .verlauf > * { min-width: 0; }
+.zwei .flaeche { grid-template-columns: minmax(0, 1fr); }
+
+.intro { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.intro article { display: grid; gap: 6px; align-content: start; padding-top: 14px; border-top: 2px solid var(--accent); }
+.intro .tag { font-family: var(--f-mono); font-size: 12px; color: var(--accent-ink); letter-spacing: .04em; text-transform: uppercase; }
+.intro h3 { font-size: 18px; font-weight: 600; }
+.intro p { color: var(--fg2); font-size: 15px; }
+.skalenkarte { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 24px; align-items: center; }
+.skalenkopf { display: grid; gap: 6px; }
+.skalenkopf h3 { font-size: 18px; font-weight: 600; }
+.skalenkopf p { color: var(--fg2); font-size: 15px; }
+.stufen { display: grid; grid-template-columns: 1fr 2fr 1.4fr; gap: 3px; }
+.stufen div { display: grid; gap: 2px; align-content: start; padding: 12px 12px 4px; border-top: 8px solid var(--c); }
+.stufen div:first-child { border-top-left-radius: 4px; }
+.stufen div:last-child { border-top-right-radius: 4px; }
+.stufen b { font-family: var(--f-mono); font-size: 13px; font-weight: 500; }
+.stufen span { font-size: 13px; color: var(--fg2); }
+.erk .breit { grid-column: span 2; }
+.erk { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.erk article { padding: 18px 20px; display: grid; gap: 6px; align-content: start; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); margin: 0 -1px -1px 0; }
+.erk .tag { font-family: var(--f-mono); font-size: 12px; color: var(--accent-ink); letter-spacing: .04em; text-transform: uppercase; }
+.erk h3 { font-size: 18px; font-weight: 600; }
+.erk p { color: var(--fg2); font-size: 15px; }
+
+/* Verlauf mit Raumauswahl */
+.verlauf { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; }
+.auswahl { display: grid; gap: 14px; align-content: start; }
+.auswahl fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 2px; }
+.auswahl legend { font-size: 13px; color: var(--fg3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+.raum { display: grid; grid-template-columns: auto 12px minmax(0, 1fr); align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 15px; }
+.raum:hover { background: var(--grid); }
+.raum input { width: 16px; height: 16px; margin: 0; accent-color: var(--fg); cursor: pointer; }
+.raum .farbe { width: 12px; height: 12px; border-radius: 3px; background: var(--c); }
+.raum:has(input:not(:checked)) { color: var(--fg3); }
+.raum:has(input:not(:checked)) .farbe { opacity: .3; }
+.voreinst { display: flex; flex-wrap: wrap; gap: 6px; }
+.voreinst button { font: inherit; font-size: 13px; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.voreinst button:hover { border-color: var(--fg3); }
+button:focus-visible, .raum input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.zeichen { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--fg2); }
+.zeichen span { display: inline-flex; align-items: center; gap: 6px; }
+.zeichen i { width: 18px; border-top: 2px dashed var(--c); }
+.zeichen b { width: 14px; height: 10px; background: var(--urlaub); border: 1px solid color-mix(in srgb, var(--crit) 45%, transparent); }
+
+/* Diagramme */
+.diagramm { position: relative; width: 100%; }
+.diagramm svg { display: block; width: 100%; overflow: visible; }
+.diagramm text { font-family: var(--f-body); font-size: 12px; fill: var(--fg2); }
+.diagramm .achse { stroke: var(--line); }
+.diagramm .gitter { stroke: var(--grid); }
+.diagramm .titelchen { font-size: 14px; color: var(--fg2); margin-bottom: 6px; display: block; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font-size: 13px; box-shadow: 0 6px 18px rgba(0,0,0,.12); min-width: 160px; z-index: 5; }
+.tip strong { display: block; font-weight: 600; margin-bottom: 4px; }
+.tip .z { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 8px; align-items: center; color: var(--fg2); }
+.tip .z i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+.tip .z span:last-child { font-family: var(--f-mono); color: var(--fg); }
+.legende { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--fg2); margin-top: 10px; }
+.legende span { display: inline-flex; align-items: center; gap: 6px; }
+.legende i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+.legende i.q { border-radius: 2px; }
+.legende i.d { width: 0; height: 0; border-radius: 0; background: none; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 10px solid var(--c); }
+
+.zwei { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+.zwei .flaeche { display: grid; gap: 12px; align-content: start; }
+.zwei h3 { font-size: 18px; font-weight: 600; }
+.zwei .flaeche > p { color: var(--fg2); font-size: 15px; }
+
+.tabwrap { overflow-x: auto; }
+table { border-collapse: separate; border-spacing: 3px; width: 100%; font-size: 14px; }
+th { font-weight: 500; color: var(--fg2); text-align: left; padding: 6px 8px; white-space: nowrap; }
+thead th { font-size: 12px; text-align: center; white-space: normal; vertical-align: bottom; line-height: 1.25; }
+td.zelle { text-align: center; padding: 9px 4px; border-radius: 4px; font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--fg); min-width: 50px; }
+td.leer { color: var(--fg3); background: var(--bg); }
+.skala { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--fg3); margin-top: 8px; }
+.skala .bar { width: 180px; height: 10px; border-radius: 3px; }
+
+.methode ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--fg2); font-size: 15px; max-width: 90ch; }
+
+@media (max-width: 900px) {
+  .verlauf, .zwei, .erk, .intro, .skalenkarte { grid-template-columns: minmax(0, 1fr); }
+  .stufen { grid-template-columns: minmax(0, 1fr); }
+  .stufen div { border-top: 0; border-left: 6px solid var(--c); padding: 6px 10px; border-radius: 0 !important; }
+  .erk .breit { grid-column: auto; }
+  .auswahl fieldset { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi:nth-child(3) { padding-left: 0; border-left: 0; }
+  .kpi:nth-child(n+3) { border-top: 1px solid var(--band-line); }
+}
+@media (max-width: 460px) {
+  .kpi .val { font-size: 30px; }
+  .titel svg { width: 48px; height: 48px; }
+}
+</style>
+</head>
+<body>
+<section class="band">
+  <div class="innen">
+    <div class="titel">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="48" style="fill:var(--accent)"></circle>
+        <g style="fill:var(--band-bg)">
+          <circle cx="50" cy="50" r="7"></circle>
+          <path d="M50 50 L36 25.8 A28 28 0 0 1 64 25.8 Z" transform="translate(0,-2)"></path>
+          <path d="M50 50 L36 25.8 A28 28 0 0 1 64 25.8 Z" transform="rotate(120 50 50) translate(0,-2)"></path>
+          <path d="M50 50 L36 25.8 A28 28 0 0 1 64 25.8 Z" transform="rotate(240 50 50) translate(0,-2)"></path>
+        </g>
+        <circle cx="50" cy="50" r="11" style="fill:none;stroke:var(--accent);stroke-width:4"></circle>
+      </svg>
+      <div>
+        <div class="ebene">Messzeitraum 24.03. – 13.10.2026 · 7 Räume</div>
+        <h1>Radon im Haus 2026</h1>
+      </div>
+    </div>
+    <p class="lead">Radon-Messungen in 7 Räumen, verglichen mit Wetter und Lüften. Einheit: Bq/m³.</p>
+    <div class="kpis">
+      <div class="kpi"><span class="lbl">Ø Wohnräume</span><span class="val" id="k-wohn">–<small>Bq/m³</small></span><span class="status" style="--c:var(--good)">deutlich unter Referenzwert 300</span></div>
+      <div class="kpi"><span class="lbl">Höchster Raum (Ø)</span><span class="val" id="k-max">–<small>Bq/m³</small></span><span class="status" style="--c:var(--s5)">Küche, Sensor am Sockel</span></div>
+      <div class="kpi"><span class="lbl">Stunden über 300 Bq/m³</span><span class="val" id="k-300">–<small>%</small></span><span class="status" style="--c:var(--warn)">fast nur im Urlaub</span></div>
+      <div class="kpi"><span class="lbl">Höchstes Tagesmittel</span><span class="val" id="k-urlaub">–<small>Bq/m³</small></span><span class="status" style="--c:var(--crit)">Urlaub 1.–6. Aug., nicht gelüftet</span></div>
+    </div>
+  </div>
+</section>
+
+<main>
+  <div class="innen">
+    <section class="kapitel">
+      <header><h2>Was ist Radon?</h2></header>
+      <div class="intro">
+        <article>
+          <h3>Gas aus dem Boden</h3>
+          <p>Radon ist ein radioaktives Gas. Es entsteht, wenn Uran im Boden zerfällt. Man kann es nicht sehen oder riechen.</p>
+        </article>
+        <article>
+          <h3>Weg ins Haus</h3>
+          <p>Es kommt durch Risse und Leitungen ins Haus und sammelt sich in geschlossenen Räumen, vor allem im Keller.</p>
+        </article>
+        <article>
+          <h3>Gefahr</h3>
+          <p>Eingeatmet schädigt es die Lunge. Nach dem Rauchen ist Radon die häufigste Ursache für Lungenkrebs.</p>
+        </article>
+      </div>
+      <div class="flaeche skalenkarte">
+        <div class="skalenkopf">
+          <h3>Grenzwerte</h3>
+          <p>Wichtig ist die Belastung über lange Zeit, nicht einzelne Spitzen.</p>
+        </div>
+        <div class="stufen" role="img" aria-label="Skala: unter 100 niedrig, 100 bis 300 erhöht, über 300 hoch">
+          <div style="--c:var(--good)"><b>unter 100</b><span>niedrig (WHO)</span></div>
+          <div style="--c:var(--warn)"><b>100 – 300</b><span>erhöht</span></div>
+          <div style="--c:var(--crit)"><b>über 300</b><span>über Referenzwert Österreich</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="kapitel">
+      <header><h2>Die wichtigsten Erkenntnisse</h2></header>
+      <div class="erk">
+        <article><span class="tag">1.–6. August</span><h3>Urlaub: nicht gelüftet</h3><p>Radon stieg in allen Räumen auf über 300 Bq/m³. Nach der Rückkehr fiel es sofort wieder.</p></article>
+        <article class="breit"><span class="tag">ab ca. 24. August</span><h3>Lüftungsanlage statt Fenster</h3><p>Im Keller sank Radon von ~100 auf ~40 Bq/m³, in der Küche (Sockel) von ~73 auf ~30. In den Wohnräumen blieb es bei ~30. Ein Teil davon kann auch am kühleren Wetter liegen.</p></article>
+        <article><span class="tag">Temperatur</span><h3>Kalt draußen = mehr Radon</h3><p>In den Wohnräumen steigt Radon an kalten Tagen (r ≈ −0,5). Im März lag die Küche bei 140–270.</p></article>
+        <article><span class="tag">Keller</span><h3>Im Keller umgekehrt</h3><p>Technikraum und Werkstatt haben bei Hitze mehr Radon (r ≈ +0,5), im August ~145 Bq/m³.</p></article>
+        <article><span class="tag">Tageszeit</span><h3>Morgens am höchsten</h3><p>Höchstwert um ~6 Uhr, Tiefstwert um ~18 Uhr. Nachts sind die Fenster zu.</p></article>
+        <article><span class="tag">Wetter</span><h3>Luftdruck und Wind egal</h3><p>Kein messbarer Zusammenhang (|r| &lt; 0,15).</p></article>
+        <article class="breit"><span class="tag">Gesamt</span><h3>Niedrige Belastung</h3><p>Alle Räume liegen im Mittel bei 37–60 Bq/m³, also unter 100.</p></article>
+      </div>
+    </section>
+
+    <section class="kapitel">
+      <header>
+        <h2>Lüften im Vergleich</h2>
+        <p>Durchschnittliches Radon in Bq/m³.</p>
+      </header>
+      <div class="flaeche">
+        <div class="diagramm" id="d-lueften"></div>
+      </div>
+    </section>
+
+    <section class="kapitel">
+      <header>
+        <h2>Verlauf über den Messzeitraum</h2>
+        <p>Tagesmittel pro Raum.</p>
+      </header>
+      <div class="flaeche verlauf">
+        <div class="auswahl">
+          <fieldset id="raumwahl"><legend>Räume</legend></fieldset>
+          <div class="voreinst">
+            <button type="button" id="v-alle">Alle</button>
+            <button type="button" id="v-wohn">Wohnräume</button>
+            <button type="button" id="v-neben">Keller</button>
+            <button type="button" id="v-keine">Keine</button>
+          </div>
+        </div>
+        <div style="display:grid;gap:14px;min-width:0">
+          <div class="zeichen">
+            <span style="--c:var(--crit)"><i></i>Referenzwert Österreich 300</span>
+            <span style="--c:var(--warn)"><i></i>WHO-Empfehlung 100</span>
+            <span><b></b>Urlaub</span>
+          </div>
+          <div class="diagramm" id="d-verlauf"></div>
+          <div class="diagramm" id="d-temp"><span class="titelchen">Außentemperatur (°C), gleiche Zeitachse</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="kapitel">
+      <header><h2>Wann und wo</h2></header>
+      <div class="zwei">
+        <div class="flaeche">
+          <h3>Tagesgang</h3>
+          <p>Durchschnitt je Uhrzeit.</p>
+          <div class="diagramm" id="d-tagesgang"></div>
+        </div>
+        <div class="flaeche">
+          <h3>Raumvergleich</h3>
+          <p>Balken = Mittelwert, Kreis = 95-%-Wert.</p>
+          <div class="diagramm" id="d-raeume"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="kapitel">
+      <header>
+        <h2>Zusammenhang mit der Umwelt</h2>
+        <p>Tagesmittel, ohne Urlaub.</p>
+      </header>
+      <div class="zwei">
+        <div class="flaeche">
+          <h3>Radon und Außentemperatur</h3>
+          <p>Ein Punkt = ein Tag.</p>
+          <div class="diagramm" id="d-streu"></div>
+        </div>
+        <div class="flaeche">
+          <h3>Korrelation (r)</h3>
+          <p>Blau = gegenläufig, Orange = gleichläufig.</p>
+          <div class="tabwrap"><table id="t-korr"></table></div>
+          <div class="skala"><span>−1</span><span class="bar" style="background:linear-gradient(90deg,var(--neg),var(--surface),var(--pos))"></span><span>+1</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="kapitel">
+      <header>
+        <h2>Monatsmittel pro Raum</h2>
+        <p>In Bq/m³. März = nur letzte Woche. – = noch kein Sensor.</p>
+      </header>
+      <div class="flaeche tabwrap"><table id="t-monat"></table></div>
+    </section>
+
+    <section class="kapitel methode">
+      <header><h2>Methode</h2></header>
+      <ul>
+        <li>Messwerte zu Stunden- und Tagesmitteln zusammengefasst.</li>
+        <li>Werte in der ersten Stunde nach einem Sensor-Neustart entfernt (~430 Stück).</li>
+        <li>Schlafzimmer ab Mai, Luftfeuchte ab Juli.</li>
+        <li>Korrelation zeigt einen Zusammenhang, keine Ursache.</li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<script>
+const D = {"tage":["2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04","2026-04-05","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-11","2026-04-12","2026-04-13","2026-04-14","2026-04-15","2026-04-16","2026-04-17","2026-04-18","2026-04-19","2026-04-20","2026-04-21","2026-04-22","2026-04-23","2026-04-24","2026-04-25","2026-04-26","2026-04-27","2026-04-28","2026-04-29","2026-04-30","2026-05-01","2026-05-02","2026-05-03","2026-05-04","2026-05-05","2026-05-06","2026-05-07","2026-05-08","2026-05-09","2026-05-10","2026-05-11","2026-05-12","2026-05-13","2026-05-14","2026-05-15","2026-05-16","2026-05-17","2026-05-18","2026-05-19","2026-05-20","2026-05-21","2026-05-22","2026-05-23","2026-05-24","2026-05-25","2026-05-26","2026-05-27","2026-05-28","2026-05-29","2026-05-30","2026-05-31","2026-06-01","2026-06-02","2026-06-03","2026-06-04","2026-06-05","2026-06-06","2026-06-07","2026-06-08","2026-06-09","2026-06-10","2026-06-11","2026-06-12","2026-06-13","2026-06-14","2026-06-15","2026-06-16","2026-06-17","2026-06-18","2026-06-19","2026-06-20","2026-06-21","2026-06-22","2026-06-23","2026-06-24","2026-06-25","2026-06-26","2026-06-27","2026-06-28","2026-06-29","2026-06-30","2026-07-01","2026-07-02","2026-07-03","2026-07-04","2026-07-05","2026-07-06","2026-07-07","2026-07-08","2026-07-09","2026-07-10","2026-07-11","2026-07-12","2026-07-13","2026-07-14","2026-07-15","2026-07-16","2026-07-17","2026-07-18","2026-07-19","2026-07-20","2026-07-21","2026-07-22","2026-07-23","2026-07-24","2026-07-25","2026-07-26","2026-07-27","2026-07-28","2026-07-29","2026-07-30","2026-07-31","2026-08-01","2026-08-02","2026-08-03","2026-08-04","2026-08-05","2026-08-06","2026-08-07","2026-08-08","2026-08-09","2026-08-10","2026-08-11","2026-08-12","2026-08-13","2026-08-14","2026-08-15","2026-08-16","2026-08-17","2026-08-18","2026-08-19","2026-08-20","2026-08-21","2026-08-22","2026-08-23","2026-08-24","2026-08-25","2026-08-26","2026-08-27","2026-08-28","2026-08-29","2026-08-30","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-05","2026-09-06","2026-09-07","2026-09-08","2026-09-09","2026-09-10","2026-09-11","2026-09-12","2026-09-13","2026-09-14","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-19","2026-09-20","2026-09-21","2026-09-22","2026-09-23","2026-09-24","2026-09-25","2026-09-26","2026-09-27","2026-09-28","2026-09-29","2026-09-30","2026-10-01","2026-10-02","2026-10-03","2026-10-04","2026-10-05","2026-10-06","2026-10-07","2026-10-08","2026-10-09","2026-10-10","2026-10-11","2026-10-12","2026-10-13"],"radon":{"Wohnzimmer":[null,null,null,150.99,98.45,137.11,61.94,66.58,68.53,47.69,73.45,43.55,22.3,30.4,45.06,66.32,74.43,45.49,64.92,57.96,36.69,37.33,41.59,50.97,33.52,38.01,64.29,58.15,63.02,41.89,40.45,34.69,22.86,20.15,49.31,21.63,40.75,28.97,28.19,32.7,22.77,23.94,34.22,35.28,28.48,28.06,24.5,27.67,56.49,52.07,36.52,51.34,41.28,51.01,52.85,37.35,40.92,36.07,35.88,34.99,32.64,32.85,30.97,27.22,15.2,36.89,43.96,51.35,33.57,39.59,20.75,28.9,37.68,40.63,24.16,31.7,19.05,59.73,41.4,51.97,22.61,28.18,40.99,36.27,24.54,22.69,36.73,26.31,21.43,35.44,31.53,46.99,39.09,34.9,34.28,45.77,22.32,27.43,21.25,39.33,14.36,26.89,28.34,44.22,56.64,18.32,27.6,40.35,38.33,43.86,43.73,21.81,17.03,21.85,10.47,17.03,21.99,127.41,28.72,25.19,34.08,27.04,32.15,23.05,26.45,24.55,28.52,42.75,65.7,187.98,280.31,325.8,329.84,335.3,317.54,17.51,25.93,36.59,20.74,30.98,16.38,19.82,15.12,50.45,49.48,16.9,18.81,25.11,19.66,24.73,23.71,51.8,32.62,20.79,27.7,22.57,19.4,20.85,31.64,18.42,17.48,21.46,24.04,18.57,17.07,16.56,25.6,39.69,21.82,26.51,18.35,20.78,22.85,17.56,24.6,35.78,11.97,19.97,22.2,21.13,16.86,21.56,35.94,38.1,32.73,38.61,43.05,40.06,38.31,40.24,46.08,41.94,43.38,43.36,47.85,52.84,61.42,48.28,27.32,30.89,31.91,40.36,64.07],"Kueche":[274.48,186.45,146.24,221.44,148.63,139.68,56.17,54.51,61.79,42.88,68.77,40.27,19.23,25.28,38.77,59.59,63.88,39.35,57.35,50.66,34.05,38.74,40.05,47.1,25.13,32.92,60.62,49.64,54.16,39.35,38.26,33.18,18.96,20.24,38.2,16.22,30.53,25.03,23.79,29.06,17.93,18.79,25.64,34.94,21.0,20.34,19.16,19.64,48.97,47.8,30.76,35.98,30.3,44.56,43.33,33.07,41.81,32.68,33.01,24.28,32.29,28.02,26.01,28.37,15.02,34.49,37.42,46.92,28.59,44.15,16.52,30.92,28.42,39.44,18.61,27.6,14.95,48.33,33.24,49.91,22.12,22.78,41.46,31.69,20.61,18.11,36.5,23.31,22.12,33.48,29.38,42.86,35.31,35.62,32.84,41.82,17.48,26.68,19.41,30.35,14.09,22.14,22.25,35.25,55.42,15.53,26.23,38.67,38.4,42.87,40.41,19.85,13.84,17.65,7.6,13.76,20.08,124.21,30.97,26.12,24.91,25.21,33.48,22.09,24.06,24.22,27.7,38.79,63.87,182.81,282.15,326.32,341.72,336.26,307.7,15.2,23.87,35.43,21.14,27.94,13.56,14.77,14.78,48.87,50.35,15.16,17.92,21.51,19.58,24.58,18.83,54.36,26.19,15.82,27.32,17.15,14.05,14.17,23.82,18.45,17.04,21.85,22.84,16.68,15.27,13.96,26.13,28.95,17.59,25.07,16.35,18.1,21.47,17.47,28.05,34.12,12.16,17.15,18.52,20.02,18.28,22.07,35.69,37.67,29.13,36.92,42.54,41.06,31.55,33.55,41.94,40.17,36.6,33.51,44.47,49.1,53.01,45.5,30.47,30.59,30.73,40.89,57.01],"Buero":[null,null,null,55.45,68.21,58.11,47.13,48.0,67.68,46.29,58.55,42.68,22.95,50.37,25.66,45.8,36.81,33.83,66.84,43.07,27.63,25.05,44.44,39.01,29.08,41.89,34.61,55.66,33.46,34.36,54.8,37.01,13.96,17.31,44.02,14.58,21.55,23.18,26.61,28.46,17.52,22.41,31.9,38.26,21.25,18.38,29.93,16.23,62.03,51.18,38.26,52.75,42.8,66.17,58.14,23.01,33.0,24.59,31.3,28.92,29.69,32.15,27.13,21.68,10.3,30.57,42.3,41.25,27.06,44.3,8.78,33.3,25.3,31.56,10.8,20.54,12.76,44.09,27.79,50.31,14.22,19.35,32.66,14.03,13.55,14.26,37.5,24.81,29.94,32.33,27.79,44.55,34.67,43.69,32.98,38.11,21.16,19.81,16.99,18.69,10.67,12.48,19.61,29.07,67.0,25.94,25.41,30.27,41.4,28.16,39.73,14.06,13.43,16.02,8.61,10.79,17.47,101.05,23.37,14.34,9.25,12.16,28.42,20.56,18.88,19.17,27.06,33.11,58.71,145.18,210.86,270.44,308.16,322.66,280.64,17.56,31.08,41.87,21.84,22.3,11.44,14.14,15.41,47.88,40.68,14.48,13.18,13.84,14.86,24.47,19.11,19.2,22.1,14.25,23.73,16.74,16.02,25.59,33.46,27.52,10.63,22.21,20.76,18.18,15.0,15.13,25.59,33.05,16.46,23.28,20.35,17.14,19.54,15.86,27.72,32.14,15.32,19.06,21.18,21.14,16.23,21.3,33.47,30.29,32.0,31.62,38.23,44.62,35.29,34.71,41.78,43.83,38.04,38.19,43.95,48.08,51.02,44.02,22.72,22.74,23.15,34.83,48.14],"Schlafzimmer":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,42.45,55.81,50.39,49.24,62.54,31.54,45.49,27.57,41.98,57.71,35.19,46.26,43.71,43.02,31.41,47.7,48.51,69.19,48.14,51.14,31.03,46.79,38.32,57.1,35.83,44.23,25.94,58.78,48.22,71.39,42.05,45.89,48.73,52.04,33.98,37.35,69.61,44.47,51.84,65.23,64.02,79.64,63.69,63.35,56.93,68.73,37.63,51.02,29.85,47.83,37.23,38.57,37.55,56.49,83.84,20.7,44.0,56.01,59.86,65.09,59.44,36.6,26.09,21.71,25.0,30.46,28.32,80.45,55.2,41.51,28.64,30.19,46.85,36.09,34.03,34.86,46.16,63.25,85.68,236.7,333.91,387.21,390.18,388.5,342.95,25.92,37.15,52.02,41.4,45.35,34.36,29.46,25.28,60.0,57.89,32.37,29.85,25.29,28.24,34.58,29.84,63.49,41.77,30.13,46.21,33.79,39.28,35.19,44.76,29.31,28.97,36.45,36.53,30.21,21.89,26.51,38.22,45.46,25.78,23.3,26.24,31.13,32.67,26.93,38.88,46.96,25.29,29.07,27.8,34.38,22.37,26.15,34.93,42.99,36.76,46.22,55.0,55.86,51.07,42.92,59.93,54.2,43.73,47.37,49.05,51.14,57.54,55.91,29.82,30.19,35.22,37.41,66.46],"Kueche - Sockel":[null,null,null,null,null,null,65.16,60.61,57.9,44.0,66.29,45.48,24.5,35.39,42.59,59.41,58.25,34.12,53.93,50.58,34.57,43.03,44.78,49.81,35.89,42.46,53.35,48.47,68.64,38.34,32.55,27.57,26.5,25.26,38.1,19.75,36.39,29.51,32.73,34.95,30.11,32.53,39.93,49.18,34.31,26.3,29.79,33.09,43.4,56.12,34.98,33.01,46.64,94.38,71.84,100.46,75.87,67.97,68.27,53.39,56.74,61.77,74.39,59.48,39.78,60.81,86.71,83.5,77.33,60.34,49.48,59.3,58.16,55.86,41.26,55.43,39.4,67.39,58.91,81.16,57.36,60.05,74.34,54.77,47.1,43.49,53.84,36.04,34.83,47.52,46.65,61.23,43.67,50.18,47.42,53.28,31.5,48.69,40.37,54.43,27.88,32.87,47.12,52.85,87.13,59.19,131.52,95.69,102.4,107.54,96.4,54.85,54.23,73.5,41.78,72.01,112.14,275.63,121.15,106.31,143.91,99.95,92.77,67.87,97.34,64.43,73.86,77.0,112.54,269.56,324.09,375.36,387.16,370.3,404.03,63.43,57.25,79.3,52.22,77.73,44.64,57.48,46.12,60.19,49.42,40.95,28.56,42.54,29.33,31.94,23.12,65.22,28.81,16.87,27.16,19.27,18.05,21.98,34.54,26.16,27.95,40.01,48.88,12.03,21.87,12.34,22.62,34.42,23.8,51.17,15.88,11.46,15.12,10.96,25.02,26.08,6.67,14.28,21.26,18.15,17.57,23.16,38.18,42.63,34.06,40.79,34.12,38.17,26.96,28.96,33.09,33.96,30.26,35.2,39.47,50.83,39.35,56.14,48.9,31.32,57.42,49.27,51.53],"Technikraum":[null,null,null,null,null,null,null,6.1,9.49,6.0,5.57,11.68,3.43,13.63,9.73,9.0,13.85,7.02,7.86,20.74,10.01,10.02,13.77,18.91,19.77,16.03,6.96,7.05,13.89,9.36,6.72,8.3,6.77,13.63,13.83,4.89,4.72,12.94,20.04,22.88,13.34,13.16,11.68,6.42,9.24,15.23,10.17,7.54,2.5,5.28,8.64,9.47,3.36,5.26,17.47,4.18,13.92,6.2,24.44,39.65,105.02,156.51,171.54,188.37,9.93,17.65,15.03,13.04,5.96,19.12,2.67,8.3,2.89,13.51,7.93,20.88,9.51,6.93,3.71,null,null,6.31,6.7,14.71,10.02,20.01,33.12,13.56,23.64,25.31,63.47,103.11,44.97,32.94,50.42,75.87,88.36,67.52,61.55,50.42,66.51,51.15,50.92,46.3,73.66,95.53,74.45,100.18,80.45,52.7,87.81,34.57,78.28,125.15,20.06,10.62,12.55,41.54,120.27,64.25,7.47,15.55,34.64,78.4,125.65,59.21,107.21,146.44,170.72,203.43,234.84,273.39,292.12,303.66,295.32,48.87,97.7,153.63,178.5,188.93,203.69,213.61,93.65,90.67,139.84,167.32,175.75,214.88,186.19,148.06,129.24,50.17,22.05,15.41,25.63,18.97,11.24,10.3,16.96,13.24,10.33,22.12,23.39,22.85,21.15,20.68,31.56,45.48,34.26,49.7,30.37,23.8,25.72,22.09,28.43,38.1,17.89,22.31,29.75,30.73,25.06,39.22,49.39,50.05,54.63,49.43,50.11,53.47,43.35,37.62,50.28,50.84,46.95,46.86,55.16,56.83,62.62,62.09,51.25,50.64,52.85,44.98,53.41],"Werkstatt":[null,null,null,null,null,null,null,7.06,9.92,4.55,4.1,9.03,4.32,15.59,9.33,11.28,14.21,8.64,5.3,18.51,10.95,8.92,13.82,18.05,23.08,19.26,7.24,7.38,13.8,11.49,7.86,10.92,9.2,11.24,12.59,4.15,3.03,9.46,18.95,24.08,13.21,11.89,9.4,5.77,12.63,19.19,6.49,8.94,1.91,4.74,8.13,10.38,2.99,6.04,16.38,7.28,13.25,10.77,20.58,40.47,90.71,134.05,170.69,183.56,14.87,18.12,13.24,12.94,5.22,16.95,4.64,10.17,3.86,12.38,11.16,20.86,7.25,8.59,4.1,null,4.58,6.43,5.57,14.28,8.44,20.22,32.84,10.02,22.25,23.94,60.54,109.52,50.26,30.85,48.26,79.66,101.71,68.47,64.99,47.09,63.93,45.61,47.06,38.39,67.72,85.07,77.03,105.45,75.06,52.8,92.62,34.67,86.96,130.66,23.55,11.79,14.03,52.03,137.71,75.95,8.7,17.59,37.73,81.21,136.8,62.4,112.96,153.54,183.28,215.88,247.5,290.54,306.73,328.41,316.28,52.0,107.64,157.21,195.96,190.65,218.88,238.69,103.6,92.2,145.48,177.28,198.12,225.04,204.06,162.55,135.65,55.49,17.72,12.87,24.75,19.48,16.36,10.16,21.35,14.1,10.74,21.15,23.38,20.34,25.16,21.84,30.31,47.88,39.46,51.85,30.17,26.34,27.78,21.74,28.63,40.77,17.1,24.49,38.56,33.81,32.72,51.8,62.47,69.56,72.43,60.84,49.9,54.39,45.29,47.24,62.77,60.67,72.58,57.38,73.94,74.49,74.91,88.16,76.84,79.67,74.02,60.24,70.54]},"aussen":[7.4,4.67,3.83,3.24,3.99,4.05,4.2,5.32,5.56,7.65,9.41,12.81,12.61,10.97,8.45,7.62,4.74,7.76,10.13,10.72,10.01,11.65,12.75,11.7,12.83,11.37,8.4,6.66,6.9,9.24,11.41,12.68,11.72,11.51,12.53,11.98,8.33,11.04,14.81,16.62,18.46,18.09,15.7,12.8,13.43,14.46,16.0,14.55,8.16,9.75,10.37,10.1,10.3,10.96,11.97,14.11,13.57,15.57,16.35,19.22,21.55,22.88,21.74,22.94,20.34,17.49,18.22,18.7,17.39,18.62,15.46,16.52,14.83,17.11,18.93,20.25,16.98,12.95,12.41,12.5,18.98,17.72,16.6,16.43,20.46,22.98,24.85,24.92,23.99,23.95,24.8,25.74,26.15,26.55,27.18,27.79,26.26,23.37,19.2,19.9,20.61,18.91,18.84,19.5,23.97,20.6,19.93,20.72,21.77,21.53,22.31,22.62,null,24.11,22.88,21.52,17.45,17.72,16.89,18.22,18.36,16.72,19.68,20.87,20.07,21.35,23.14,26.6,26.52,22.26,24.13,25.87,27.5,27.18,23.83,21.33,22.6,23.37,24.85,24.29,22.29,21.68,22.34,21.9,22.75,19.93,16.38,21.57,22.94,20.25,16.85,15.91,16.7,16.68,18.96,22.15,22.65,19.37,20.28,21.0,19.11,19.28,19.77,22.97,19.62,16.95,17.65,21.95,17.92,14.53,14.32,15.46,15.75,17.04,16.07,17.01,15.82,14.39,15.1,16.86,13.98,11.51,9.23,11.78,10.19,11.57,12.42,13.59,15.15,15.09,14.83,14.57,15.05,14.95,13.14,12.88,13.46,13.9,12.48,12.89,11.1,9.21,3.51],"co2":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,490.04,676.81,628.78,585.35,708.2,607.61,555.6,545.03,498.53,493.66,480.27,514.35,524.24,494.8,536.3,542.43,564.05,582.38,519.63,462.81,506.59,553.32,647.65,493.65,513.31,459.31,512.77,510.58,484.27,485.67,509.44,481.94,510.04,602.08,497.36,493.1,609.7,504.91,550.54,503.74,518.17,630.66,611.51,586.08,645.25,547.11,608.31,742.49,685.67,601.1,562.95,571.58,491.69,458.88,547.12,470.91,516.13,481.2,576.18,587.09,487.9,477.42,566.5,620.93,474.94,507.06,497.48,484.37,457.62,448.65,458.92,456.65,539.21,520.42,496.34,458.55,492.37,466.36,476.96,492.35,504.22,616.55,708.21,638.8,511.61,436.92,410.29,411.65,409.76,426.85,592.35,580.86,645.33,616.26,627.94,574.22,552.27,565.63,634.23,638.06,536.15,548.97,525.74,556.68,551.93,513.99,532.88,545.6,471.3,528.05,467.21,466.39,470.69,481.6,510.36,474.81,524.61,571.25,558.18,527.92,533.01,584.15,591.83,529.12,591.06,520.03,538.53,587.37,542.77,592.64,563.66,562.83,542.28,547.71,568.74,494.18,544.81,533.98,623.91,531.24,611.45,572.77,579.31,579.46,551.21,590.63,577.81,665.83,561.62,540.32,584.8,558.26,596.36,532.98,614.68,754.97,552.21,562.09],"kenn":{"Buero":{"stunden":4785,"mittel":36.9,"median":25.0,"p95":93.8,"max":351.3,"ueber100":4.5,"ueber300":1.2},"Kueche":{"stunden":4864,"mittel":44.0,"median":27.3,"p95":141.2,"max":552.9,"ueber100":6.8,"ueber300":2.4},"Kueche - Sockel":{"stunden":4722,"mittel":60.4,"median":42.7,"p95":152.0,"max":584.0,"ueber100":12.1,"ueber300":2.9},"Schlafzimmer":{"stunden":3670,"mittel":55.1,"median":39.3,"p95":117.0,"max":471.0,"ueber100":6.3,"ueber300":3.1},"Technikraum":{"stunden":4591,"mittel":52.4,"median":27.0,"p95":197.2,"max":357.5,"ueber100":16.1,"ueber300":0.9},"Werkstatt":{"stunden":4610,"mittel":55.9,"median":28.3,"p95":208.8,"max":363.7,"ueber100":17.0,"ueber300":1.5},"Wohnzimmer":{"stunden":4793,"mittel":44.1,"median":29.6,"p95":113.2,"max":394.1,"ueber100":6.3,"ueber300":2.0}},"monat":{"Wohnzimmer":{"2026-03":111.3,"2026-04":46.7,"2026-05":35.9,"2026-06":33.6,"2026-07":33.5,"2026-08":78.5,"2026-09":26.2,"2026-10":44.1},"Kueche":{"2026-03":174.1,"2026-04":41.3,"2026-05":30.7,"2026-06":30.5,"2026-07":31.0,"2026-08":76.5,"2026-09":24.6,"2026-10":40.7},"Buero":{"2026-03":57.4,"2026-04":38.6,"2026-05":32.9,"2026-06":27.7,"2026-07":26.2,"2026-08":68.0,"2026-09":24.3,"2026-10":38.2},"Schlafzimmer":{"2026-05":45.9,"2026-06":51.1,"2026-07":44.8,"2026-08":97.8,"2026-09":34.9,"2026-10":47.0},"Kueche - Sockel":{"2026-03":132.3,"2026-04":43.3,"2026-05":53.0,"2026-06":53.2,"2026-07":86.3,"2026-08":102.7,"2026-09":26.1,"2026-10":42.6},"Technikraum":{"2026-04":10.3,"2026-05":31.0,"2026-06":27.9,"2026-07":69.2,"2026-08":138.2,"2026-09":33.4,"2026-10":52.7},"Werkstatt":{"2026-04":10.5,"2026-05":29.7,"2026-06":27.9,"2026-07":71.8,"2026-08":147.5,"2026-09":37.6,"2026-10":71.3}},"tagesgang":{"Wohnzimmer":[46.8,50.0,52.9,56.4,60.9,63.6,65.5,56.8,48.1,44.1,42.2,41.0,40.0,38.4,36.7,36.0,34.3,33.3,32.1,32.2,33.2,34.8,37.1,42.7],"Kueche":[47.0,50.1,52.1,55.8,59.1,62.2,63.5,55.3,47.5,44.1,42.7,41.7,40.7,38.3,35.4,34.0,32.8,31.6,30.9,31.9,36.8,37.2,41.2,44.0],"Buero":[39.1,42.2,43.6,46.0,47.6,50.3,51.7,46.4,39.4,35.6,34.8,33.8,33.1,32.3,32.1,31.6,30.6,29.9,29.4,28.5,30.2,31.1,32.6,35.1],"Schlafzimmer":[51.6,51.7,55.5,59.7,61.0,65.8,68.9,68.3,63.8,56.9,53.9,53.6,54.6,54.1,52.3,53.3,52.4,51.6,49.5,50.2,48.6,47.8,49.2,49.1],"Kueche - Sockel":[61.7,65.4,67.6,72.6,77.1,79.7,81.6,72.7,65.3,61.0,61.1,59.9,57.9,55.3,53.4,51.8,50.9,49.0,48.0,48.3,49.0,48.3,51.3,60.1],"Technikraum":[53.4,54.0,54.5,55.1,56.1,56.9,57.0,58.3,56.2,54.5,51.7,51.0,50.6,49.1,49.5,49.5,48.7,48.8,49.2,50.4,50.5,50.9,51.2,52.0],"Werkstatt":[57.1,57.4,57.7,57.8,58.7,59.8,60.3,60.7,60.2,57.5,55.8,54.2,54.4,52.9,52.8,52.4,52.2,51.5,52.7,53.2,54.7,55.5,56.3,57.1]},"korr":{"Wohnzimmer":{"Außentemperatur":-0.5,"Bodentemp. 54 cm":-0.49,"Wind":-0.01,"Luftdruck":-0.03,"ΔT innen–außen":0.21,"CO₂ Küche":0.29},"Kueche":{"Außentemperatur":-0.46,"Bodentemp. 54 cm":-0.46,"Wind":0.14,"Luftdruck":-0.14,"ΔT innen–außen":0.18,"CO₂ Küche":0.3},"Buero":{"Außentemperatur":-0.38,"Bodentemp. 54 cm":-0.44,"Wind":-0.07,"Luftdruck":-0.09,"ΔT innen–außen":0.19,"CO₂ Küche":0.37},"Schlafzimmer":{"Außentemperatur":0.14,"Bodentemp. 54 cm":-0.15,"Wind":-0.21,"Luftdruck":-0.01,"ΔT innen–außen":-0.17,"CO₂ Küche":0.4},"Kueche - Sockel":{"Außentemperatur":0.15,"Bodentemp. 54 cm":0.1,"Wind":-0.06,"Luftdruck":-0.05,"ΔT innen–außen":-0.19,"CO₂ Küche":-0.09},"Technikraum":{"Außentemperatur":0.51,"Bodentemp. 54 cm":0.51,"Wind":-0.13,"Luftdruck":0.06,"ΔT innen–außen":-0.37,"CO₂ Küche":0.2},"Werkstatt":{"Außentemperatur":0.46,"Bodentemp. 54 cm":0.51,"Wind":-0.15,"Luftdruck":0.06,"ΔT innen–außen":-0.3,"CO₂ Küche":0.22}},"streu":[{"d":"2026-03-25","t":7.4,"w":274.48,"n":null,"u":false},{"d":"2026-03-26","t":4.67,"w":186.45,"n":null,"u":false},{"d":"2026-03-27","t":3.83,"w":146.24,"n":null,"u":false},{"d":"2026-03-28","t":3.24,"w":142.62666666666667,"n":null,"u":false},{"d":"2026-03-29","t":3.99,"w":105.09666666666665,"n":null,"u":false},{"d":"2026-03-30","t":4.05,"w":111.63333333333334,"n":null,"u":false},{"d":"2026-03-31","t":4.2,"w":55.080000000000005,"n":null,"u":false},{"d":"2026-04-01","t":5.32,"w":56.36333333333334,"n":6.58,"u":false},{"d":"2026-04-02","t":5.56,"w":66.0,"n":9.705,"u":false},{"d":"2026-04-03","t":7.65,"w":45.620000000000005,"n":5.275,"u":false},{"d":"2026-04-04","t":9.41,"w":66.92333333333333,"n":4.835,"u":false},{"d":"2026-04-05","t":12.81,"w":42.166666666666664,"n":10.355,"u":false},{"d":"2026-04-06","t":12.61,"w":21.493333333333336,"n":3.875,"u":false},{"d":"2026-04-07","t":10.97,"w":35.35,"n":14.61,"u":false},{"d":"2026-04-08","t":8.45,"w":36.49666666666667,"n":9.530000000000001,"u":false},{"d":"2026-04-09","t":7.62,"w":57.23666666666666,"n":10.14,"u":false},{"d":"2026-04-10","t":4.74,"w":58.373333333333335,"n":14.030000000000001,"u":false},{"d":"2026-04-11","t":7.76,"w":39.556666666666665,"n":7.83,"u":false},{"d":"2026-04-12","t":10.13,"w":63.03666666666667,"n":6.58,"u":false},{"d":"2026-04-13","t":10.72,"w":50.56333333333333,"n":19.625,"u":false},{"d":"2026-04-14","t":10.01,"w":32.79,"n":10.48,"u":false},{"d":"2026-04-15","t":11.65,"w":33.70666666666667,"n":9.469999999999999,"u":false},{"d":"2026-04-16","t":12.75,"w":42.026666666666664,"n":13.795,"u":false},{"d":"2026-04-17","t":11.7,"w":45.69333333333333,"n":18.48,"u":false},{"d":"2026-04-18","t":12.83,"w":29.243333333333336,"n":21.424999999999997,"u":false},{"d":"2026-04-19","t":11.37,"w":37.60666666666666,"n":17.645000000000003,"u":false},{"d":"2026-04-20","t":8.4,"w":53.17333333333334,"n":7.1,"u":false},{"d":"2026-04-21","t":6.66,"w":54.48333333333333,"n":7.215,"u":false},{"d":"2026-04-22","t":6.9,"w":50.21333333333333,"n":13.845,"u":false},{"d":"2026-04-23","t":9.24,"w":38.53333333333333,"n":10.425,"u":false},{"d":"2026-04-24","t":11.41,"w":44.50333333333333,"n":7.29,"u":false},{"d":"2026-04-25","t":12.68,"w":34.96,"n":9.61,"u":false},{"d":"2026-04-26","t":11.72,"w":18.593333333333334,"n":7.984999999999999,"u":false},{"d":"2026-04-27","t":11.51,"w":19.23333333333333,"n":12.435,"u":false},{"d":"2026-04-28","t":12.53,"w":43.843333333333334,"n":13.21,"u":false},{"d":"2026-04-29","t":11.98,"w":17.476666666666667,"n":4.52,"u":false},{"d":"2026-04-30","t":8.33,"w":30.94333333333333,"n":3.875,"u":false},{"d":"2026-05-01","t":11.04,"w":25.72666666666667,"n":11.2,"u":false},{"d":"2026-05-02","t":14.81,"w":26.19666666666667,"n":19.494999999999997,"u":false},{"d":"2026-05-03","t":16.62,"w":30.073333333333334,"n":23.479999999999997,"u":false},{"d":"2026-05-04","t":18.46,"w":19.406666666666666,"n":13.275,"u":false},{"d":"2026-05-05","t":18.09,"w":21.713333333333335,"n":12.525,"u":false},{"d":"2026-05-06","t":15.7,"w":30.586666666666662,"n":10.54,"u":false},{"d":"2026-05-07","t":12.8,"w":36.16,"n":6.095,"u":false},{"d":"2026-05-08","t":13.43,"w":23.576666666666668,"n":10.935,"u":false},{"d":"2026-05-09","t":14.46,"w":22.26,"n":17.21,"u":false},{"d":"2026-05-10","t":16.0,"w":24.53,"n":8.33,"u":false},{"d":"2026-05-11","t":14.55,"w":21.180000000000003,"n":8.24,"u":false},{"d":"2026-05-12","t":8.16,"w":55.830000000000005,"n":2.205,"u":false},{"d":"2026-05-13","t":9.75,"w":50.35,"n":5.01,"u":false},{"d":"2026-05-14","t":10.37,"w":36.9975,"n":8.385000000000002,"u":false},{"d":"2026-05-15","t":10.1,"w":48.97,"n":9.925,"u":false},{"d":"2026-05-16","t":10.3,"w":41.1925,"n":3.175,"u":false},{"d":"2026-05-17","t":10.96,"w":52.745000000000005,"n":5.65,"u":false},{"d":"2026-05-18","t":11.97,"w":54.215,"n":16.924999999999997,"u":false},{"d":"2026-05-19","t":14.11,"w":31.2425,"n":5.73,"u":false},{"d":"2026-05-20","t":13.57,"w":40.305,"n":13.585,"u":false},{"d":"2026-05-21","t":15.57,"w":30.2275,"n":8.485,"u":false},{"d":"2026-05-22","t":16.35,"w":35.5425,"n":22.509999999999998,"u":false},{"d":"2026-05-23","t":19.22,"w":36.475,"n":40.06,"u":false},{"d":"2026-05-24","t":21.55,"w":32.4525,"n":97.865,"u":false},{"d":"2026-05-25","t":22.88,"w":34.82,"n":145.28,"u":false},{"d":"2026-05-26","t":21.74,"w":31.955,"n":171.115,"u":false},{"d":"2026-05-27","t":22.94,"w":30.0725,"n":185.965,"u":false},{"d":"2026-05-28","t":20.34,"w":17.9825,"n":12.399999999999999,"u":false},{"d":"2026-05-29","t":17.49,"w":37.4125,"n":17.884999999999998,"u":false},{"d":"2026-05-30","t":18.22,"w":43.0475,"n":14.135,"u":false},{"d":"2026-05-31","t":18.7,"w":52.1775,"n":12.989999999999998,"u":false},{"d":"2026-06-01","t":17.39,"w":34.34,"n":5.59,"u":false},{"d":"2026-06-02","t":18.62,"w":44.795,"n":18.035,"u":false},{"d":"2026-06-03","t":15.46,"w":19.27,"n":3.655,"u":false},{"d":"2026-06-04","t":16.52,"w":34.9775,"n":9.235,"u":false},{"d":"2026-06-05","t":14.83,"w":32.43,"n":3.375,"u":false},{"d":"2026-06-06","t":17.11,"w":42.1825,"n":12.945,"u":false},{"d":"2026-06-07","t":18.93,"w":22.35,"n":9.545,"u":false},{"d":"2026-06-08","t":20.25,"w":31.0175,"n":20.869999999999997,"u":false},{"d":"2026-06-09","t":16.98,"w":18.175,"n":8.379999999999999,"u":false},{"d":"2026-06-10","t":12.95,"w":52.7325,"n":7.76,"u":false},{"d":"2026-06-11","t":12.41,"w":37.6625,"n":3.905,"u":false},{"d":"2026-06-12","t":12.5,"w":55.894999999999996,"n":null,"u":false},{"d":"2026-06-13","t":18.98,"w":25.25,"n":4.58,"u":false},{"d":"2026-06-14","t":17.72,"w":29.05,"n":6.369999999999999,"u":false},{"d":"2026-06-15","t":16.6,"w":40.96,"n":6.135,"u":false},{"d":"2026-06-16","t":16.43,"w":33.5075,"n":14.495000000000001,"u":false},{"d":"2026-06-17","t":20.46,"w":23.169999999999998,"n":9.23,"u":false},{"d":"2026-06-18","t":22.98,"w":23.1025,"n":20.115000000000002,"u":false},{"d":"2026-06-19","t":24.85,"w":45.085,"n":32.980000000000004,"u":false},{"d":"2026-06-20","t":24.92,"w":29.724999999999998,"n":11.79,"u":false},{"d":"2026-06-21","t":23.99,"w":31.332500000000003,"n":22.945,"u":false},{"d":"2026-06-22","t":23.95,"w":41.62,"n":24.625,"u":false},{"d":"2026-06-23","t":24.8,"w":38.18,"n":62.004999999999995,"u":false},{"d":"2026-06-24","t":25.74,"w":53.51,"n":106.315,"u":false},{"d":"2026-06-25","t":26.15,"w":43.19,"n":47.614999999999995,"u":false},{"d":"2026-06-26","t":26.55,"w":44.39,"n":31.895,"u":false},{"d":"2026-06-27","t":27.18,"w":39.2575,"n":49.34,"u":false},{"d":"2026-06-28","t":27.79,"w":48.6075,"n":77.765,"u":false},{"d":"2026-06-29","t":26.26,"w":24.6475,"n":95.035,"u":false},{"d":"2026-06-30","t":23.37,"w":31.235,"n":67.995,"u":false},{"d":"2026-07-01","t":19.2,"w":21.875,"n":63.269999999999996,"u":false},{"d":"2026-07-02","t":19.9,"w":34.05,"n":48.755,"u":false},{"d":"2026-07-03","t":20.61,"w":19.0875,"n":65.22,"u":false},{"d":"2026-07-04","t":18.91,"w":25.02,"n":48.379999999999995,"u":false},{"d":"2026-07-05","t":18.84,"w":26.9375,"n":48.99,"u":false},{"d":"2026-07-06","t":19.5,"w":41.2575,"n":42.345,"u":false},{"d":"2026-07-07","t":23.97,"w":65.725,"n":70.69,"u":false},{"d":"2026-07-08","t":20.6,"w":20.1225,"n":90.3,"u":false},{"d":"2026-07-09","t":19.93,"w":30.810000000000002,"n":75.74000000000001,"u":false},{"d":"2026-07-10","t":20.72,"w":41.325,"n":102.815,"u":false},{"d":"2026-07-11","t":21.77,"w":44.4975,"n":77.755,"u":false},{"d":"2026-07-12","t":21.53,"w":44.995,"n":52.75,"u":false},{"d":"2026-07-13","t":22.31,"w":45.8275,"n":90.215,"u":false},{"d":"2026-07-14","t":22.62,"w":23.080000000000002,"n":34.620000000000005,"u":false},{"d":"2026-07-16","t":24.11,"w":19.3075,"n":127.905,"u":false},{"d":"2026-07-17","t":22.88,"w":12.92,"n":21.805,"u":false},{"d":"2026-07-18","t":21.52,"w":18.01,"n":11.204999999999998,"u":false},{"d":"2026-07-19","t":17.45,"w":21.965,"n":13.29,"u":false},{"d":"2026-07-20","t":17.72,"w":108.28,"n":46.785,"u":false},{"d":"2026-07-21","t":16.89,"w":34.565,"n":128.99,"u":false},{"d":"2026-07-22","t":18.22,"w":26.79,"n":70.1,"u":false},{"d":"2026-07-23","t":18.36,"w":24.22,"n":8.084999999999999,"u":false},{"d":"2026-07-24","t":16.72,"w":23.65,"n":16.57,"u":false},{"d":"2026-07-25","t":19.68,"w":35.225,"n":36.185,"u":false},{"d":"2026-07-26","t":20.87,"w":25.4475,"n":79.805,"u":false},{"d":"2026-07-27","t":20.07,"w":25.855,"n":131.22500000000002,"u":false},{"d":"2026-07-28","t":21.35,"w":25.7,"n":60.805,"u":false},{"d":"2026-07-29","t":23.14,"w":32.36,"n":110.085,"u":false},{"d":"2026-07-30","t":26.6,"w":44.475,"n":149.99,"u":false},{"d":"2026-07-31","t":26.52,"w":68.49000000000001,"n":177.0,"u":false},{"d":"2026-08-01","t":22.26,"w":188.1675,"n":209.655,"u":true},{"d":"2026-08-02","t":24.13,"w":276.8075,"n":241.17000000000002,"u":true},{"d":"2026-08-03","t":25.87,"w":327.4425,"n":281.96500000000003,"u":true},{"d":"2026-08-04","t":27.5,"w":342.475,"n":299.425,"u":true},{"d":"2026-08-05","t":27.18,"w":345.68,"n":316.035,"u":true},{"d":"2026-08-06","t":23.83,"w":312.2075,"n":305.79999999999995,"u":true},{"d":"2026-08-07","t":21.33,"w":19.0475,"n":50.435,"u":false},{"d":"2026-08-08","t":22.6,"w":29.5075,"n":102.67,"u":false},{"d":"2026-08-09","t":23.37,"w":41.4775,"n":155.42000000000002,"u":false},{"d":"2026-08-10","t":24.85,"w":26.28,"n":187.23000000000002,"u":false},{"d":"2026-08-11","t":24.29,"w":31.642500000000002,"n":189.79000000000002,"u":false},{"d":"2026-08-12","t":22.29,"w":18.935,"n":211.285,"u":false},{"d":"2026-08-13","t":21.68,"w":19.5475,"n":226.15,"u":false},{"d":"2026-08-14","t":22.34,"w":17.6475,"n":98.625,"u":false},{"d":"2026-08-15","t":21.9,"w":51.8,"n":91.435,"u":false},{"d":"2026-08-16","t":22.75,"w":49.6,"n":142.66,"u":false},{"d":"2026-08-17","t":19.93,"w":19.7275,"n":172.3,"u":false},{"d":"2026-08-18","t":16.38,"w":19.94,"n":186.935,"u":false},{"d":"2026-08-19","t":21.57,"w":21.4375,"n":219.95999999999998,"u":false},{"d":"2026-08-20","t":22.94,"w":20.585,"n":195.125,"u":false},{"d":"2026-08-21","t":20.25,"w":27.09,"n":155.305,"u":false},{"d":"2026-08-22","t":16.85,"w":22.8725,"n":132.445,"u":false},{"d":"2026-08-23","t":15.91,"w":47.2125,"n":52.83,"u":false},{"d":"2026-08-24","t":16.7,"w":30.67,"n":19.884999999999998,"u":false},{"d":"2026-08-25","t":16.68,"w":20.2475,"n":14.14,"u":false},{"d":"2026-08-26","t":18.96,"w":31.240000000000002,"n":25.189999999999998,"u":false},{"d":"2026-08-27","t":22.15,"w":22.5625,"n":19.225,"u":false},{"d":"2026-08-28","t":22.65,"w":22.1875,"n":13.8,"u":false},{"d":"2026-08-29","t":19.37,"w":23.95,"n":10.23,"u":false},{"d":"2026-08-30","t":20.28,"w":33.42,"n":19.155,"u":false},{"d":"2026-08-31","t":21.0,"w":23.425,"n":13.67,"u":false},{"d":"2026-09-01","t":19.11,"w":18.53,"n":10.535,"u":false},{"d":"2026-09-02","t":19.28,"w":25.4925,"n":21.634999999999998,"u":false},{"d":"2026-09-03","t":19.77,"w":26.0425,"n":23.384999999999998,"u":false},{"d":"2026-09-04","t":22.97,"w":20.91,"n":21.595,"u":false},{"d":"2026-09-05","t":19.62,"w":17.3075,"n":23.155,"u":false},{"d":"2026-09-06","t":16.95,"w":18.04,"n":21.259999999999998,"u":false},{"d":"2026-09-07","t":17.65,"w":28.884999999999998,"n":30.935,"u":false},{"d":"2026-09-08","t":21.95,"w":36.7875,"n":46.68,"u":false},{"d":"2026-09-09","t":17.92,"w":20.4125,"n":36.86,"u":false},{"d":"2026-09-10","t":14.53,"w":24.54,"n":50.775000000000006,"u":false},{"d":"2026-09-11","t":14.32,"w":20.3225,"n":30.270000000000003,"u":false},{"d":"2026-09-12","t":15.46,"w":21.7875,"n":25.07,"u":false},{"d":"2026-09-13","t":15.75,"w":24.1325,"n":26.75,"u":false},{"d":"2026-09-14","t":17.04,"w":19.455,"n":21.915,"u":false},{"d":"2026-09-15","t":16.07,"w":29.8125,"n":28.53,"u":false},{"d":"2026-09-16","t":17.01,"w":37.25,"n":39.435,"u":false},{"d":"2026-09-17","t":15.82,"w":16.185,"n":17.495,"u":false},{"d":"2026-09-18","t":14.39,"w":21.3125,"n":23.4,"u":false},{"d":"2026-09-19","t":15.1,"w":22.425,"n":34.155,"u":false},{"d":"2026-09-20","t":16.86,"w":24.1675,"n":32.27,"u":false},{"d":"2026-09-21","t":13.98,"w":18.435000000000002,"n":28.89,"u":false},{"d":"2026-09-22","t":11.51,"w":22.77,"n":45.51,"u":false},{"d":"2026-09-23","t":9.23,"w":35.0075,"n":55.93,"u":false},{"d":"2026-09-24","t":11.78,"w":37.2625,"n":59.805,"u":false},{"d":"2026-09-25","t":10.19,"w":32.655,"n":63.53,"u":false},{"d":"2026-09-26","t":11.57,"w":38.3425,"n":55.135000000000005,"u":false},{"d":"2026-09-27","t":12.42,"w":44.705,"n":50.004999999999995,"u":false},{"d":"2026-09-28","t":13.59,"w":45.4,"n":53.93,"u":false},{"d":"2026-09-29","t":15.15,"w":39.055,"n":44.32,"u":false},{"d":"2026-09-30","t":15.09,"w":37.855000000000004,"n":42.43,"u":false},{"d":"2026-10-01","t":14.83,"w":47.4325,"n":56.525000000000006,"u":false},{"d":"2026-10-02","t":14.57,"w":45.035,"n":55.755,"u":false},{"d":"2026-10-03","t":15.05,"w":40.4375,"n":59.765,"u":false},{"d":"2026-10-04","t":14.95,"w":40.6075,"n":52.120000000000005,"u":false},{"d":"2026-10-05","t":13.14,"w":46.33,"n":64.55,"u":false},{"d":"2026-10-06","t":12.88,"w":50.29,"n":65.66,"u":false},{"d":"2026-10-07","t":13.46,"w":55.7475,"n":68.765,"u":false},{"d":"2026-10-08","t":13.9,"w":48.4275,"n":75.125,"u":false},{"d":"2026-10-09","t":12.48,"w":27.5825,"n":64.045,"u":false},{"d":"2026-10-10","t":12.89,"w":28.6025,"n":65.155,"u":false},{"d":"2026-10-11","t":11.1,"w":30.252499999999998,"n":63.435,"u":false},{"d":"2026-10-12","t":9.21,"w":38.3725,"n":52.61,"u":false},{"d":"2026-10-13","t":3.51,"w":58.919999999999995,"n":61.975,"u":false}],"druck3h":{"Buero":{"pearson":0.07,"n":4695},"Kueche":{"pearson":0.08,"n":4782},"Kueche - Sockel":{"pearson":0.1,"n":4644},"Schlafzimmer":{"pearson":0.01,"n":3607},"Technikraum":{"pearson":0.06,"n":4464},"Werkstatt":{"pearson":0.07,"n":4488},"Wohnzimmer":{"pearson":0.08,"n":4714}}};
+
+const NAMEN = { "Wohnzimmer": "Wohnzimmer", "Kueche": "Küche", "Buero": "Büro", "Schlafzimmer": "Schlafzimmer",
+  "Kueche - Sockel": "Küche (Sockel)", "Technikraum": "Technikraum (Keller)", "Werkstatt": "Werkstatt (Keller)" };
+const RAEUME = Object.keys(NAMEN);
+const FARBE = { "Wohnzimmer": "var(--s1)", "Kueche": "var(--s2)", "Buero": "var(--s3)", "Schlafzimmer": "var(--s4)",
+  "Kueche - Sockel": "var(--s5)", "Technikraum": "var(--s6)", "Werkstatt": "var(--s7)" };
+const WOHN = ["Wohnzimmer", "Kueche", "Buero", "Schlafzimmer"];
+const NEBEN = ["Technikraum", "Werkstatt"];
+const aktiv = new Set(["Wohnzimmer", "Kueche - Sockel", "Werkstatt"]);
+const SVGNS = "http://www.w3.org/2000/svg";
+
+const fmt = (v, s = 0) => v == null ? "–" : v.toLocaleString("de-AT", { minimumFractionDigits: s, maximumFractionDigits: s });
+const datum = d => { const [, m, t] = d.split("-"); return `${+t}.${+m}.`; };
+const istUrlaub = d => d >= "2026-08-01" && d <= "2026-08-06";
+
+// ---------- kleine SVG-Helfer ----------
+function el(name, attrs, eltern) {
+  const e = document.createElementNS(SVGNS, name);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (eltern) eltern.appendChild(e);
+  return e;
+}
+function schritte(max, anzahl) {
+  // "schöne" Achsenschritte (1, 2, 5, 10 …)
+  const roh = max / anzahl, p = Math.pow(10, Math.floor(Math.log10(roh)));
+  const s = [1, 2, 2.5, 5, 10].map(f => f * p).find(f => f >= roh);
+  // nur dann noch einen Schritt anhängen, wenn der Wert deutlich darüber liegt
+  const out = [0]; while (out[out.length - 1] < max - s * 0.1) out.push(+(out[out.length - 1] + s).toFixed(6));
+  return out;
+}
+function neuesSvg(box, hoehe) {
+  box.querySelectorAll("svg, .tip").forEach(n => n.remove());
+  const w = Math.max(box.clientWidth, 280);
+  const svg = el("svg", { viewBox: `0 0 ${w} ${hoehe}`, height: hoehe, role: "img" });
+  box.appendChild(svg);
+  const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; box.appendChild(tip);
+  return { svg, w, tip };
+}
+function zeigeTip(box, tip, html, px, py) {
+  tip.innerHTML = html; tip.hidden = false;
+  const bw = box.clientWidth, tw = tip.offsetWidth;
+  let left = px + 14; if (left + tw > bw) left = px - tw - 14; if (left < 0) left = 0;
+  tip.style.left = left + "px"; tip.style.top = Math.max(0, py - 10) + "px";
+}
+
+// ---------- Liniendiagramm über Tage oder Stunden ----------
+function linien(box, o) {
+  const H = o.hoehe, R = { l: 44, r: 12, t: 10, b: 26 };
+  const { svg, w, tip } = neuesSvg(box, H);
+  svg.setAttribute("aria-label", o.label);
+  const n = o.x.length, iw = w - R.l - R.r, ih = H - R.t - R.b;
+  const sx = i => R.l + (n === 1 ? 0 : i * iw / (n - 1));
+  let ymin = o.ymin ?? 0, ymax = o.ymaxMin ?? 0;
+  o.serien.forEach(s => s.werte.forEach(v => { if (v != null) { ymax = Math.max(ymax, v); if (o.ymin == null) ymin = Math.min(ymin, v); } }));
+  const ticks = schritte(ymax - ymin, 4).map(t => t + Math.floor(ymin / 5) * 5);
+  ymin = ticks[0]; ymax = Math.max(ticks[ticks.length - 1], ymax);
+  const sy = v => R.t + ih - (v - ymin) / (ymax - ymin || 1) * ih;
+
+  if (o.band) el("rect", { x: sx(o.band[0]) - 3, y: R.t, width: sx(o.band[1]) - sx(o.band[0]) + 6, height: ih, style: "fill:var(--urlaub)" }, svg);
+  ticks.forEach(t => {
+    el("line", { x1: R.l, x2: w - R.r, y1: sy(t), y2: sy(t), class: "gitter" }, svg);
+    el("text", { x: R.l - 8, y: sy(t) + 4, "text-anchor": "end" }, svg).textContent = fmt(t);
+  });
+  (o.linien || []).forEach(([wert, farbe]) => {
+    if (wert > ymax) return;
+    el("line", { x1: R.l, x2: w - R.r, y1: sy(wert), y2: sy(wert), style: `stroke:${farbe};stroke-width:1.5;stroke-dasharray:5 4` }, svg);
+  });
+  el("line", { x1: R.l, x2: w - R.r, y1: R.t + ih, y2: R.t + ih, class: "achse" }, svg);
+  // x-Beschriftung
+  const xt = o.xTicks(n, iw);
+  xt.forEach(i => el("text", { x: sx(i), y: H - 6, "text-anchor": "middle" }, svg).textContent = o.xText(i));
+
+  // Linien (mit Lücken bei fehlenden Werten)
+  o.serien.forEach(s => {
+    let d = "", offen = false;
+    s.werte.forEach((v, i) => {
+      if (v == null) { offen = false; return; }
+      d += (offen ? "L" : "M") + sx(i).toFixed(1) + " " + sy(v).toFixed(1); offen = true;
+    });
+    if (s.flaeche) {
+      // Fläche über alle vorhandenen Punkte (Lücken werden überbrückt)
+      const idx = s.werte.map((v, i) => v == null ? -1 : i).filter(i => i >= 0);
+      const f = idx.map((i, k) => (k ? "L" : "M") + sx(i).toFixed(1) + " " + sy(s.werte[i]).toFixed(1)).join("")
+        + `L${sx(idx[idx.length - 1])} ${sy(ymin)}L${sx(idx[0])} ${sy(ymin)}Z`;
+      el("path", { d: f, style: `fill:${s.farbe};opacity:.12` }, svg);
+    }
+    el("path", { d, style: `fill:none;stroke:${s.farbe};stroke-width:2;stroke-linejoin:round;stroke-linecap:round` }, svg);
+  });
+
+  // Hover: Fadenkreuz + Punkte + Tooltip
+  const kreuz = el("line", { y1: R.t, y2: R.t + ih, style: "stroke:var(--fg3);stroke-width:1", visibility: "hidden" }, svg);
+  const punkte = o.serien.map(s => el("circle", { r: 4.5, style: `fill:${s.farbe};stroke:var(--surface);stroke-width:2`, visibility: "hidden" }, svg));
+  const flaeche = el("rect", { x: R.l, y: R.t, width: iw, height: ih, style: "fill:transparent;cursor:crosshair" }, svg);
+  function bewege(ev) {
+    const r = svg.getBoundingClientRect();
+    const mx = (ev.clientX - r.left) * (w / r.width);
+    const i = Math.max(0, Math.min(n - 1, Math.round((mx - R.l) / iw * (n - 1))));
+    kreuz.setAttribute("x1", sx(i)); kreuz.setAttribute("x2", sx(i)); kreuz.setAttribute("visibility", "visible");
+    const zeilen = [];
+    o.serien.forEach((s, k) => {
+      const v = s.werte[i];
+      if (v == null) { punkte[k].setAttribute("visibility", "hidden"); return; }
+      punkte[k].setAttribute("cx", sx(i)); punkte[k].setAttribute("cy", sy(v)); punkte[k].setAttribute("visibility", "visible");
+      zeilen.push([v, `<div class="z" style="--c:${s.farbe}"><i></i><span>${s.name}</span><span>${fmt(v, o.nachkomma || 0)}</span></div>`]);
+    });
+    zeilen.sort((a, b) => b[0] - a[0]);
+    const html = `<strong>${o.tipTitel(i)}</strong>` + (zeilen.length ? zeilen.map(z => z[1]).join("") : `<span style="color:var(--fg3)">keine Daten</span>`);
+    zeigeTip(box, tip, html, sx(i) * (r.width / w), (ev.clientY - r.top));
+  }
+  function weg() { kreuz.setAttribute("visibility", "hidden"); punkte.forEach(p => p.setAttribute("visibility", "hidden")); tip.hidden = true; }
+  flaeche.addEventListener("pointermove", bewege);
+  flaeche.addEventListener("pointerdown", bewege);
+  flaeche.addEventListener("pointerleave", weg);
+}
+
+const urlaubIdx = [D.tage.indexOf("2026-08-01"), D.tage.indexOf("2026-08-06")];
+const tagTicks = (n, iw) => {
+  // Monatsanfänge als Beschriftung
+  const out = []; D.tage.forEach((d, i) => { if (d.endsWith("-01")) out.push(i); });
+  return iw < 420 ? out.filter((_, k) => k % 2 === 0) : out;
+};
+const MON = ["Jän", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+const tagText = i => MON[+D.tage[i].slice(5, 7) - 1];
+const tagTitel = i => datum(D.tage[i]) + "2026" + (istUrlaub(D.tage[i]) ? " · Urlaub" : "");
+
+function zeichneVerlauf() {
+  const box = document.getElementById("d-verlauf");
+  const serien = RAEUME.filter(r => aktiv.has(r)).map(r => ({ name: NAMEN[r], farbe: FARBE[r], werte: D.radon[r] }));
+  linien(box, { label: "Radon-Tagesmittel pro Raum", hoehe: box.clientWidth < 500 ? 280 : 360, x: D.tage, serien,
+    ymaxMin: 120, band: urlaubIdx, linien: [[300, "var(--crit)"], [100, "var(--warn)"]],
+    xTicks: tagTicks, xText: tagText, tipTitel: i => tagTitel(i) + " · Bq/m³" });
+  if (!serien.length) {
+    const svg = box.querySelector("svg");
+    el("text", { x: svg.viewBox.baseVal.width / 2, y: 150, "text-anchor": "middle", style: "font-size:14px" }, svg).textContent = "Wähle links mindestens einen Raum aus.";
+  }
+}
+function zeichneTemp() {
+  linien(document.getElementById("d-temp"), { label: "Außentemperatur", hoehe: 150, x: D.tage, ymin: 0, nachkomma: 1,
+    serien: [{ name: "Außentemperatur", farbe: "var(--accent)", werte: D.aussen, flaeche: true }],
+    band: urlaubIdx, xTicks: tagTicks, xText: tagText, tipTitel: i => tagTitel(i) + " · °C" });
+}
+function zeichneTagesgang() {
+  const box = document.getElementById("d-tagesgang");
+  linien(box, { label: "Tagesgang", hoehe: 280, x: [...Array(24).keys()], ymin: 0,
+    serien: RAEUME.map(r => ({ name: NAMEN[r], farbe: FARBE[r], werte: D.tagesgang[r] })),
+    xTicks: () => [0, 3, 6, 9, 12, 15, 18, 21, 23], xText: i => i + " h", tipTitel: i => `${i}:00 – ${i}:59 Uhr · Bq/m³` });
+  legende(box, RAEUME.map(r => [NAMEN[r], FARBE[r], ""]));
+}
+function legende(box, eintraege) {
+  box.querySelectorAll(".legende, .zeichen").forEach(n => n.remove());
+  const l = document.createElement("div"); l.className = "legende";
+  l.innerHTML = eintraege.map(([name, farbe, form]) => `<span style="--c:${farbe}"><i class="${form}"></i>${name}</span>`).join("");
+  box.appendChild(l);
+}
+
+// ---------- Raumvergleich (horizontale Balken) ----------
+function zeichneRaeume() {
+  const box = document.getElementById("d-raeume");
+  const sort = [...RAEUME].sort((a, b) => D.kenn[b].mittel - D.kenn[a].mittel);
+  const zeile = 36, R = { l: 150, r: 16, t: 4, b: 26 }, H = R.t + sort.length * zeile + R.b;
+  const { svg, w, tip } = neuesSvg(box, H);
+  svg.setAttribute("aria-label", "Raumvergleich Mittelwert und 95-%-Wert");
+  const iw = w - R.l - R.r, max = 250, sx = v => R.l + v / max * iw;
+  schritte(max, 5).forEach(t => {
+    el("line", { x1: sx(t), x2: sx(t), y1: R.t, y2: H - R.b, class: "gitter" }, svg);
+    el("text", { x: sx(t), y: H - 6, "text-anchor": "middle" }, svg).textContent = fmt(t);
+  });
+  sort.forEach((r, i) => {
+    const k = D.kenn[r], y = R.t + i * zeile, bh = 16, yb = y + (zeile - bh) / 2;
+    el("text", { x: R.l - 10, y: y + zeile / 2 + 4, "text-anchor": "end", style: "font-size:13px;fill:var(--fg)" }, svg).textContent = NAMEN[r];
+    const bw = sx(k.mittel) - R.l;
+    el("path", { d: `M${R.l} ${yb}H${R.l + bw - 4}a4 4 0 0 1 4 4v${bh - 8}a4 4 0 0 1 -4 4H${R.l}Z`, style: `fill:${FARBE[r]}` }, svg);
+    el("line", { x1: R.l + bw, x2: sx(k.p95), y1: yb + bh / 2, y2: yb + bh / 2, style: "stroke:var(--fg3);stroke-width:1" }, svg);
+    el("circle", { cx: sx(k.p95), cy: yb + bh / 2, r: 5, style: "fill:var(--surface);stroke:var(--fg);stroke-width:2" }, svg);
+    el("text", { x: R.l + bw - 6, y: yb + bh / 2 + 4, "text-anchor": "end", style: "font-size:11px;fill:#fff;font-family:var(--f-mono)" }, svg).textContent = bw > 34 ? fmt(k.mittel) : "";
+    const hit = el("rect", { x: 0, y, width: w, height: zeile, style: "fill:transparent;cursor:default" }, svg);
+    hit.addEventListener("pointermove", ev => {
+      const rr = svg.getBoundingClientRect();
+      zeigeTip(box, tip, `<strong>${NAMEN[r]}</strong>
+        <div class="z" style="--c:${FARBE[r]}"><i></i><span>Mittelwert</span><span>${fmt(k.mittel, 1)}</span></div>
+        <div class="z" style="--c:transparent"><i></i><span>Median</span><span>${fmt(k.median, 1)}</span></div>
+        <div class="z" style="--c:transparent"><i></i><span>95-%-Wert</span><span>${fmt(k.p95)}</span></div>
+        <div class="z" style="--c:transparent"><i></i><span>Max. Stundenwert</span><span>${fmt(k.max)}</span></div>
+        <div class="z" style="--c:transparent"><i></i><span>Stunden über 100</span><span>${fmt(k.ueber100, 1)} %</span></div>`,
+        ev.clientX - rr.left, ev.clientY - rr.top);
+    });
+    hit.addEventListener("pointerleave", () => tip.hidden = true);
+  });
+  legende(box, [["Mittelwert (Balken)", "var(--fg3)", "q"], ["95-%-Wert (Kreis)", "var(--fg)", ""]]);
+}
+
+// ---------- Säulendiagramm: nicht gelüftet / manuell / Lüftungsanlage ----------
+const PHASEN = [
+  { name: "Nicht gelüftet", info: "Urlaub, 1.–6. Aug.", von: "2026-08-01", bis: "2026-08-06", farbe: "var(--s2)" },
+  { name: "Manuell gelüftet", info: "1. Juli – 23. Aug., ohne Urlaub", von: "2026-07-01", bis: "2026-08-23", ohneUrlaub: true, farbe: "var(--s1)" },
+  { name: "Lüftungsanlage", info: "24. Aug. – 13. Okt.", von: "2026-08-24", bis: "2026-10-13", farbe: "var(--s3)" }
+];
+const GRUPPEN = [
+  { name: "Wohnräume", raeume: WOHN },
+  { name: "Küche (Sockel)", raeume: ["Kueche - Sockel"] },
+  { name: "Keller (Technik & Werkstatt)", raeume: NEBEN }
+];
+function phasenMittel(raeume, p) {
+  // Mittel über alle Tageswerte der Räume im Zeitraum
+  const werte = [];
+  raeume.forEach(r => D.radon[r].forEach((v, i) => {
+    const d = D.tage[i];
+    if (v != null && d >= p.von && d <= p.bis && !(p.ohneUrlaub && istUrlaub(d))) werte.push(v);
+  }));
+  return werte.length ? werte.reduce((a, b) => a + b, 0) / werte.length : null;
+}
+function zeichneLueften() {
+  const box = document.getElementById("d-lueften");
+  const H = 320, R = { l: 44, r: 12, t: 22, b: 30 };
+  const { svg, w, tip } = neuesSvg(box, H);
+  svg.setAttribute("aria-label", "Säulendiagramm Radon nach Lüftungsart");
+  const iw = w - R.l - R.r, ih = H - R.t - R.b;
+  const werte = GRUPPEN.map(g => PHASEN.map(p => phasenMittel(g.raeume, p)));
+  const ticks = schritte(Math.max(...werte.flat()), 4), ymax = ticks[ticks.length - 1];
+  const sy = v => R.t + ih - v / ymax * ih;
+  ticks.forEach(t => {
+    el("line", { x1: R.l, x2: w - R.r, y1: sy(t), y2: sy(t), class: "gitter" }, svg);
+    el("text", { x: R.l - 8, y: sy(t) + 4, "text-anchor": "end" }, svg).textContent = fmt(t);
+  });
+  [[300, "var(--crit)"], [100, "var(--warn)"]].forEach(([v, f]) =>
+    el("line", { x1: R.l, x2: w - R.r, y1: sy(v), y2: sy(v), style: `stroke:${f};stroke-width:1.5;stroke-dasharray:5 4` }, svg));
+  el("line", { x1: R.l, x2: w - R.r, y1: R.t + ih, y2: R.t + ih, class: "achse" }, svg);
+  const gb = iw / GRUPPEN.length, bw = Math.min(56, (gb * 0.72) / PHASEN.length - 3);
+  GRUPPEN.forEach((g, gi) => {
+    const mitte = R.l + gb * (gi + .5), start = mitte - (PHASEN.length * (bw + 3) - 3) / 2;
+    el("text", { x: mitte, y: H - 8, "text-anchor": "middle", style: "font-size:13px;fill:var(--fg)" }, svg).textContent = g.name;
+    PHASEN.forEach((p, pi) => {
+      const v = werte[gi][pi]; if (v == null) return;
+      const x = start + pi * (bw + 3), y = sy(v), h = R.t + ih - y, rr = Math.min(4, h);
+      el("path", { d: `M${x} ${R.t + ih}V${y + rr}a${rr} ${rr} 0 0 1 ${rr} ${-rr}H${x + bw - rr}a${rr} ${rr} 0 0 1 ${rr} ${rr}V${R.t + ih}Z`, style: `fill:${p.farbe}` }, svg);
+      el("text", { x: x + bw / 2, y: y - 6, "text-anchor": "middle", style: "font-size:12px;fill:var(--fg);font-family:var(--f-mono)" }, svg).textContent = fmt(v);
+      const hit = el("rect", { x: x - 1.5, y: R.t, width: bw + 3, height: ih, style: "fill:transparent" }, svg);
+      hit.addEventListener("pointermove", ev => {
+        const r = svg.getBoundingClientRect();
+        const zeilen = PHASEN.map((q, qi) => `<div class="z" style="--c:${q.farbe}"><i></i><span>${q.name}</span><span>${fmt(werte[gi][qi])}</span></div>`).join("");
+        zeigeTip(box, tip, `<strong>${g.name} · Bq/m³</strong>${zeilen}<div style="color:var(--fg3);margin-top:4px">${p.name}: ${p.info}</div>`, ev.clientX - r.left, ev.clientY - r.top);
+      });
+      hit.addEventListener("pointerleave", () => tip.hidden = true);
+    });
+  });
+  legende(box, [...PHASEN.map(p => [`${p.name} (${p.info})`, p.farbe, "q"])]);
+  const z = document.createElement("div"); z.className = "zeichen"; z.style.marginTop = "6px";
+  z.innerHTML = `<span style="--c:var(--crit)"><i></i>Referenzwert Österreich 300</span><span style="--c:var(--warn)"><i></i>WHO-Empfehlung 100</span>`;
+  box.appendChild(z);
+}
+
+// ---------- Streudiagramm ----------
+function zeichneStreu() {
+  const box = document.getElementById("d-streu");
+  const H = 300, R = { l: 44, r: 12, t: 10, b: 40 };
+  const { svg, w, tip } = neuesSvg(box, H);
+  svg.setAttribute("aria-label", "Streudiagramm Radon gegen Außentemperatur");
+  const iw = w - R.l - R.r, ih = H - R.t - R.b;
+  const xmin = 0, xmax = 30, ymax = 400;
+  const sx = v => R.l + (v - xmin) / (xmax - xmin) * iw, sy = v => R.t + ih - v / ymax * ih;
+  schritte(ymax, 4).forEach(t => { el("line", { x1: R.l, x2: w - R.r, y1: sy(t), y2: sy(t), class: "gitter" }, svg); el("text", { x: R.l - 8, y: sy(t) + 4, "text-anchor": "end" }, svg).textContent = fmt(t); });
+  [0, 5, 10, 15, 20, 25, 30].forEach(t => el("text", { x: sx(t), y: H - 22, "text-anchor": "middle" }, svg).textContent = t + " °C");
+  el("text", { x: R.l + iw / 2, y: H - 4, "text-anchor": "middle", style: "fill:var(--fg3)" }, svg).textContent = "Außentemperatur (Tagesmittel)";
+  el("line", { x1: R.l, x2: w - R.r, y1: R.t + ih, y2: R.t + ih, class: "achse" }, svg);
+  const gruppen = [
+    { key: "w", name: "Wohnräume (Ø)", farbe: "var(--s1)", form: "kreis" },
+    { key: "n", name: "Keller (Ø)", farbe: "var(--s7)", form: "quadrat" }
+  ];
+  const alle = [];
+  D.streu.forEach(p => gruppen.forEach(g => {
+    if (p[g.key] == null) return;
+    alle.push({ x: p.t, y: p[g.key], d: p.d, g, u: p.u });
+  }));
+  alle.forEach(p => {
+    const x = sx(Math.max(xmin, Math.min(xmax, p.x))), y = sy(Math.min(ymax, p.y)), f = p.u ? "var(--fg3)" : p.g.farbe;
+    const st = `fill:${f};stroke:var(--surface);stroke-width:1.2;opacity:${p.u ? .9 : .85}`;
+    if (p.u) el("path", { d: `M${x} ${y - 5}L${x + 5} ${y + 4}L${x - 5} ${y + 4}Z`, style: st }, svg);
+    else if (p.g.form === "quadrat") el("rect", { x: x - 4, y: y - 4, width: 8, height: 8, rx: 1.5, style: st }, svg);
+    else el("circle", { cx: x, cy: y, r: 4.2, style: st }, svg);
+  });
+  const ring = el("circle", { r: 8, style: "fill:none;stroke:var(--fg);stroke-width:1.5", visibility: "hidden" }, svg);
+  const flaeche = el("rect", { x: R.l, y: R.t, width: iw, height: ih, style: "fill:transparent;cursor:crosshair" }, svg);
+  flaeche.addEventListener("pointermove", ev => {
+    const r = svg.getBoundingClientRect(), k = w / r.width;
+    const mx = (ev.clientX - r.left) * k, my = (ev.clientY - r.top) * k;
+    let best = null, bd = 400;
+    alle.forEach(p => { const dx = sx(p.x) - mx, dy = sy(Math.min(ymax, p.y)) - my, dd = dx * dx + dy * dy; if (dd < bd) { bd = dd; best = p; } });
+    if (!best) { ring.setAttribute("visibility", "hidden"); tip.hidden = true; return; }
+    ring.setAttribute("cx", sx(best.x)); ring.setAttribute("cy", sy(Math.min(ymax, best.y))); ring.setAttribute("visibility", "visible");
+    zeigeTip(box, tip, `<strong>${datum(best.d)}2026${best.u ? " · Urlaub" : ""}</strong>
+      <div class="z" style="--c:${best.g.farbe}"><i></i><span>${best.g.name}</span><span>${fmt(best.y)} Bq/m³</span></div>
+      <div class="z" style="--c:var(--accent)"><i></i><span>Außentemperatur</span><span>${fmt(best.x, 1)} °C</span></div>`,
+      sx(best.x) / k, sy(Math.min(ymax, best.y)) / k);
+  });
+  flaeche.addEventListener("pointerleave", () => { ring.setAttribute("visibility", "hidden"); tip.hidden = true; });
+  legende(box, [["Wohnräume (Ø)", "var(--s1)", ""], ["Keller: Technikraum & Werkstatt (Ø)", "var(--s7)", "q"], ["Urlaubstage", "var(--fg3)", "d"]]);
+}
+
+// ---------- Tabellen ----------
+function tabellen() {
+  const faktoren = Object.keys(D.korr[RAEUME[0]]);
+  let h = "<thead><tr><th></th>" + faktoren.map(f => `<th>${f}</th>`).join("") + "</tr></thead><tbody>";
+  RAEUME.forEach(r => {
+    h += `<tr><th scope="row">${NAMEN[r]}</th>`;
+    faktoren.forEach(f => {
+      const v = D.korr[r][f], pct = Math.round(Math.min(Math.abs(v), 1) * 90);
+      h += `<td class="zelle" style="background:color-mix(in srgb, ${v < 0 ? "var(--neg)" : "var(--pos)"} ${pct}%, var(--surface))" title="${NAMEN[r]} × ${f}: r = ${fmt(v, 2)}">${v > 0 ? "+" : v < 0 ? "−" : ""}${fmt(Math.abs(v), 2)}</td>`;
+    });
+    h += "</tr>";
+  });
+  document.getElementById("t-korr").innerHTML = h + "</tbody>";
+
+  const monate = ["03", "04", "05", "06", "07", "08", "09", "10"];
+  h = "<thead><tr><th></th>" + monate.map(m => `<th>${MON[+m - 1]}</th>`).join("") + "</tr></thead><tbody>";
+  RAEUME.forEach(r => {
+    h += `<tr><th scope="row">${NAMEN[r]}</th>`;
+    monate.forEach(m => {
+      const v = D.monat[r]["2026-" + m];
+      if (v == null) { h += `<td class="zelle leer">–</td>`; return; }
+      const pct = Math.round(Math.min(v / 180, 1) * 85);
+      h += `<td class="zelle" style="background:color-mix(in srgb, var(--s1) ${pct}%, var(--surface))${pct > 45 ? ";color:#fff" : ""}" title="${NAMEN[r]}, ${MON[+m - 1]}: ${fmt(v, 1)} Bq/m³">${fmt(v)}</td>`;
+    });
+    h += "</tr>";
+  });
+  document.getElementById("t-monat").innerHTML = h + "</tbody>";
+}
+
+// ---------- Kennzahlen ----------
+function kennzahlen() {
+  const k = D.kenn, setze = (id, v) => document.getElementById(id).firstChild.textContent = v;
+  setze("k-wohn", fmt(WOHN.reduce((s, r) => s + k[r].mittel, 0) / WOHN.length));
+  setze("k-max", fmt(k["Kueche - Sockel"].mittel));
+  setze("k-300", fmt(RAEUME.reduce((s, r) => s + k[r].ueber300, 0) / RAEUME.length, 1));
+  let max = 0; RAEUME.forEach(r => D.radon[r].forEach(v => { if (v != null && v > max) max = v; }));
+  setze("k-urlaub", fmt(max));
+}
+
+// ---------- Raumauswahl ----------
+function raumwahl() {
+  const fs = document.getElementById("raumwahl");
+  RAEUME.forEach(r => {
+    const id = "raum-" + r.replace(/\W+/g, "");
+    const lab = document.createElement("label"); lab.className = "raum"; lab.style.setProperty("--c", FARBE[r]);
+    lab.innerHTML = `<input type="checkbox" id="${id}"${aktiv.has(r) ? " checked" : ""}><span class="farbe"></span><span>${NAMEN[r]}</span>`;
+    lab.querySelector("input").addEventListener("change", e => { e.target.checked ? aktiv.add(r) : aktiv.delete(r); zeichneVerlauf(); });
+    fs.appendChild(lab);
+  });
+  const setze = liste => {
+    aktiv.clear(); liste.forEach(r => aktiv.add(r));
+    RAEUME.forEach(r => document.getElementById("raum-" + r.replace(/\W+/g, "")).checked = aktiv.has(r));
+    zeichneVerlauf();
+  };
+  document.getElementById("v-alle").addEventListener("click", () => setze(RAEUME));
+  document.getElementById("v-wohn").addEventListener("click", () => setze([...WOHN, "Kueche - Sockel"]));
+  document.getElementById("v-neben").addEventListener("click", () => setze(NEBEN));
+  document.getElementById("v-keine").addEventListener("click", () => setze([]));
+}
+
+function allesZeichnen() { zeichneLueften(); zeichneVerlauf(); zeichneTemp(); zeichneTagesgang(); zeichneRaeume(); zeichneStreu(); }
+kennzahlen(); tabellen(); raumwahl(); allesZeichnen();
+let breite = 0, timer;
+new ResizeObserver(() => {
+  const b = document.querySelector("main .innen").clientWidth;
+  if (b === breite) return; breite = b;
+  clearTimeout(timer); timer = setTimeout(allesZeichnen, 120);
+}).observe(document.querySelector("main .innen"));
+</script>
+</body>
+</html>
